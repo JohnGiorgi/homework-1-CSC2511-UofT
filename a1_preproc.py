@@ -2,11 +2,18 @@ import sys
 import argparse
 import os
 import json
+
+# MY imports
 import re
 import html
 import spacy
 import codecs
+import string
 
+# TODO (John): Figure out the best place to load spacy
+# TODO (John): you MUST replace stoplist_path with /u/cs401/Wordlists/StopWords before submitting.
+
+# paths to resources
 indir = '/u/cs401/A1/data/';
 stoplist_path = 'u/cs401/Wordlists/StopWords';
 
@@ -42,18 +49,21 @@ def preproc1( comment , steps=range(1,11)):
     if 5 in steps:
         pass
     if 6 in steps:
-        # nlp = spacy.load('en', disable=['parser', 'ner'])
-        # utt = nlp(modComm)
-        pass
+        nlp = spacy.load('en', disable=['parser', 'ner'])
+        utt = nlp(u'{}'.format(modComm))
+
+        modComm = ['{}/{}'.format(token.text, token.tag_) for token in utt]
+        modComm = ' '.join(modComm)
     if 7 in steps:
         # store stop words in set
-        with codecs.open(stoplist_path, 'r', encoding='utf-8') as sl:
+        with codecs.open(stoplist_path, 'r', encoding='utf-8') as sw:
             # use generator to avoid calling line.strip() twice
             # cast as set to make lookup faster
-            stopwords = set([l for l in (line.strip() for line in sl) if l])
+            stopwords = set([l for l in (line.strip() for line in sw) if l])
         # remove stopwords
         for word in stopwords:
-            modComm = re.sub((word), '', modComm)
+            # pattern will match any stop word, with or with POS tag
+            modComm = re.sub(r'\b{}(\/\S*\b)?\b'.format(word), '', modComm)
     if 8 in steps:
         pass
     if 9 in steps:
